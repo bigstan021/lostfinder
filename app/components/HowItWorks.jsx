@@ -1,3 +1,5 @@
+"use client";
+import { motion } from "framer-motion";
 import { Search, Upload, MessageCircle } from "lucide-react";
 
 export default function HowItWorks() {
@@ -23,13 +25,19 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="bg-white py-20 px-6 text-center">
-      <h2 className="text-3xl font-bold text-gray-900 mb-12">How LostFinder Works</h2>
+    <section id="how-it-works" className="bg-white py-20 px-6 text-center">
+      <h2 className="text-3xl font-bold text-gray-900 mb-12">
+        How LostFinder Works
+      </h2>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {steps.map((step) => (
-          <div
+        {steps.map((step, index) => (
+          <motion.div
             key={step.id}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.3, duration: 0.8 }}
+            viewport={{ once: true }}
             className="bg-blue-50 p-6 rounded-xl shadow-sm hover:shadow-md transition"
           >
             <div className="flex justify-center mb-4">{step.icon}</div>
@@ -37,7 +45,7 @@ export default function HowItWorks() {
               {step.title}
             </h3>
             <p className="text-gray-600">{step.desc}</p>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

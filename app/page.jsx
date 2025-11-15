@@ -1,19 +1,19 @@
-import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
-import Footer from "./components/Footer";
-import HowItWorks from "./components/HowItWorks"
 import About from "./components/About";
-
+import HowItWorks from "./components/HowItWorks";
+import Footer from "./components/Footer";
+import Navbar from "./components/Navbar";
 
 export default function HomePage() {
-  return (
-    <>
-      <Navbar />
-      <Hero />
-      <HowItWorks />
-      <About />
-      <Footer />
-
-    </>
-  );
+    return (
+        <div className="pt-4">
+            <Navbar />
+            <main>
+                <Hero />
+                <HowItWorks />
+                <About />
+            </main>
+            <Footer />
+        </div>
+    );
 }

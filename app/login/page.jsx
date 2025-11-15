@@ -1,62 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { FcGoogle } from "react-icons/fc";
+import { signInWithPopup } from "firebase/auth";
+import { auth, provider } from "../firebaseconfig";
+import { useRouter } from "next/navigation";
 
-export default function LoginPage() {
-  const [isRegistering, setIsRegistering] = useState(false);
+export default function Login() {
+  const router = useRouter();
+
+  const loginWithGoogle = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      
+
+      localStorage.setItem("user", JSON.stringify({
+        name: user.displayName,
+        email: user.email,
+        photo: user.photoURL,
+        uid: user.uid
+      }));
+
+      router.push("/");
+    } catch (err) {
+      console.log("Google login failed:", err);
+      alert("Failed to sign in. Try again.");
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-red-100 to-white px-6">
-      <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border">
-        <h1 className="text-3xl font-bold text-center text-red-600 mb-6">
-          {isRegistering ? "Create Account" : "Welcome Back"}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
+      <div className="bg-white shadow-xl rounded-xl p-10 max-w-md w-full text-center border border-blue-100">
+
+        <div className="mb-6">
+          <img
+            src="/favicon.ico"
+            alt="Logo"
+            className="w-14 h-14 mx-auto"
+          />
+        </div>
+
+        <h1 className="text-3xl font-bold text-gray-800 mb-3">
+          Login to <span className="text-blue-600">LostFinder</span>
         </h1>
 
-        <form className="flex flex-col gap-4">
-          {isRegistering && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-          )}
-
-          <input
-            type="email"
-            placeholder="Email"
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-          />
-
-          <input
-            type="password"
-            placeholder="Password"
-            className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-          />
-
-          <button
-            type="submit"
-            className="mt-3 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition"
-          >
-            {isRegistering ? "Sign Up" : "Log In"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-gray-600">
-          {isRegistering ? "Already have an account?" : "Don’t have an account?"}{" "}
-          <button
-            onClick={() => setIsRegistering(!isRegistering)}
-            className="text-red-600 font-semibold hover:underline"
-          >
-            {isRegistering ? "Log In" : "Create one"}
-          </button>
+        <p className="text-gray-500 mb-6">
+          Sign in to continue
         </p>
 
-        <div className="mt-4 text-center">
-          <Link href="/" className="text-sm text-gray-500 hover:underline">
-            ← Back to Home
-          </Link>
-        </div>
+        <button
+          onClick={loginWithGoogle}
+          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition-all"
+        >
+          <FcGoogle size={24} />
+          <span className="text-gray-700 font-medium">
+            Login with Google
+          </span>
+        </button>
+
       </div>
     </div>
   );
