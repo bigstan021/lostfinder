@@ -127,7 +127,7 @@ export default function ReportFound() {
       setPreview(null);
 
       // redirect to user's reports (you should create /my-reports)
-      router.push("/found-items");
+      router.push("/my-reports");
     } catch (err) {
       console.error("Error saving report:", err);
       alert("Failed to save report. Try again.");
