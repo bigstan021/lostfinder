@@ -7,13 +7,13 @@ import Navbar from "./components/Navbar";
 export default function HomePage() {
     return (
         <div className="pt-4">
-            <Navbar />
+            {/* <Navbar /> */}
             <main>
                 <Hero />
                 <HowItWorks />
                 <About />
             </main>
-            <Footer />
+            {/* <Footer /> */}
         </div>
     );
 }

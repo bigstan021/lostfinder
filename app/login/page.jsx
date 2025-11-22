@@ -5,6 +5,7 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebaseconfig";
 import { useRouter } from "next/navigation";
 
+
 export default function Login() {
   const router = useRouter();
 
@@ -12,7 +13,7 @@ export default function Login() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      
+
 
       localStorage.setItem("user", JSON.stringify({
         name: user.displayName,
@@ -31,21 +32,21 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
       <div className="bg-white shadow-xl rounded-xl p-10 max-w-md w-full text-center border border-blue-100">
-
-        <div className="mb-6">
-          <img
-            src="/favicon.ico"
-            alt="Logo"
-            className="w-14 h-14 mx-auto"
-          />
-        </div>
-
+       
+          <div className="mb-6">
+            <img
+              src="/favicon.ico"
+              alt="Logo"
+              className="w-14 h-14 mx-auto"
+            />
+          </div>
+       
         <h1 className="text-3xl font-bold text-gray-800 mb-3">
-          Login to <span className="text-blue-600">LostFinder</span>
+          Login to <span className="text-blue-600"><span className="text-red-600">Lost</span>Finder</span>
         </h1>
 
         <p className="text-gray-500 mb-6">
-          Sign in to continue
+          Sign in to continue with
         </p>
 
         <button
@@ -54,7 +55,7 @@ export default function Login() {
         >
           <FcGoogle size={24} />
           <span className="text-gray-700 font-medium">
-            Login with Google
+            Google
           </span>
         </button>
 

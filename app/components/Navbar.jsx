@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { signOut } from "firebase/auth";
 import { auth } from "../firebaseconfig";
 import { motion } from "framer-motion";
+import { FaSearchengin } from "react-icons/fa6";
 
 export default function Navbar() {
   const [user, setUser] = useState(null);
@@ -32,14 +33,16 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center p-5 bg-white shadow-md fixed w-full top-0 left-0 z-50">
-      <h1 className="text-2xl font-bold text-blue-600">
-        <span className="text-red-600">Lost</span>Finder
-      </h1>
-
+    <nav className="flex justify-between items-center p-5 bg-white shadow-md fixed w-full top-0 left-0 z-[999]">
+      <Link href={'/'} className="flex flex-row justify-center item-center gap-2">
+        <span><FaSearchengin className="text-4xl" /></span>
+        <h1 className="text-2xl font-bold text-blue-600">
+          <span className="text-red-600">Lost</span>Finder
+        </h1>
+      </Link>
       <ul className="hidden md:flex gap-6 text-gray-700 font-medium">
         <li className="hover:text-blue-600 font-bold">
-          <a href="#home" onClick={(e) => handleScroll(e, "#home")}>Home</a>
+          <a href="/" onClick={(e) => handleScroll(e, "#home")}>Home</a>
         </li>
         <li className="hover:text-blue-600 font-bold">
           <a href="#how-it-works" onClick={(e) => handleScroll(e, "#how-it-works")}>How It Works</a>
@@ -60,7 +63,7 @@ export default function Navbar() {
 
       {/* LOGGED-IN VIEW */}
       {user && (
-        <div className="relative">
+        <div className="relative z-[999]">
           {/* Profile image button */}
           <div
             className="flex items-center gap-2 cursor-pointer"
@@ -112,3 +115,6 @@ export default function Navbar() {
     </nav>
   );
 }
+<h1 className="text-2xl font-bold text-blue-600">
+  <span className="text-red-600">Lost</span>Finder
+</h1> 

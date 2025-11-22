@@ -1,10 +1,11 @@
 "use client";
-
+import Navbar from "../components/Navbar";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import verifyUser from "../verifyUser";
-import { storage } from "../firebaseconfig";
+import { storage, db } from "../firebaseconfig"; // db added
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function ReportFound() {
   const router = useRouter();
@@ -21,13 +22,14 @@ export default function ReportFound() {
   const [imageFile, setImageFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Check login
   useEffect(() => {
     const u = verifyUser();
     if (!u) router.push("/login");
     else setUser(u);
-  }, []);
+  }, [router]);
 
   if (!user) return null;
 
@@ -52,7 +54,8 @@ export default function ReportFound() {
 
     setUploading(true);
 
-    const fileName = `found_items/${Date.now()}_${imageFile.name}`;
+    const safeName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const fileName = `found_items/${Date.now()}_${safeName}`;
     const storageRef = ref(storage, fileName);
 
     try {
@@ -71,33 +74,71 @@ export default function ReportFound() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Basic validation (extra check)
+    if (!formData.itemName.trim() || !formData.foundLocation.trim() || !formData.foundDate) {
+      alert("Please fill item name, location and date.");
+      return;
+    }
+
+    setSaving(true);
+
     let imageUrl = "";
 
     if (imageFile) {
       imageUrl = await uploadImage();
+      if (!imageUrl) {
+        alert("Failed to upload image. Try again.");
+        setSaving(false);
+        return;
+      }
     }
 
-    console.log("FOUND ITEM REPORTED:", {
-      ...formData,
-      imageUrl,
-      reporter: user.email,
-    });
+    // Build report object
+    const report = {
+      itemName: formData.itemName,
+      description: formData.description,
+      foundLocation: formData.foundLocation,
+      foundDate: formData.foundDate,
+      imageUrl: imageUrl || "",
+      reporterEmail: user.email || user?.email || null,
+      reporterUID: user.uid || user?.uid || null,
+      reporterName: user.name || user.displayName || null,
+      createdAt: serverTimestamp(),
+    };
 
-    alert("Found item submitted successfully!");
+    try {
+      // Save to Firestore (collection 'foundReports')
+      await addDoc(collection(db, "foundReports"), report);
 
-    // Reset form
-    setFormData({
-      itemName: "",
-      description: "",
-      foundLocation: "",
-      foundDate: "",
-      imageUrl: "",
-    });
-    setImageFile(null);
-    setPreview(null);
+      // Optional: console log
+      console.log("FOUND ITEM REPORTED:", report);
+
+      alert("Found item submitted successfully!");
+
+      // Reset form
+      setFormData({
+        itemName: "",
+        description: "",
+        foundLocation: "",
+        foundDate: "",
+        imageUrl: "",
+      });
+      setImageFile(null);
+      setPreview(null);
+
+      // redirect to user's reports (you should create /my-reports)
+      router.push("/my-reports");
+    } catch (err) {
+      console.error("Error saving report:", err);
+      alert("Failed to save report. Try again.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
+    <>
+    <Navbar />
     <section className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 py-14">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
@@ -132,7 +173,6 @@ export default function ReportFound() {
               value={formData.description}
               onChange={handleChange}
               placeholder="Describe the condition, color, features..."
-              required
               className="w-full border border-gray-300 rounded-md p-2 h-24"
             ></textarea>
           </div>
@@ -188,13 +228,14 @@ export default function ReportFound() {
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={uploading}
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+            disabled={uploading || saving}
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
           >
-            {uploading ? "Uploading..." : "Submit Found Item"}
+            {uploading ? "Uploading image..." : saving ? "Saving..." : "Submit Found Item"}
           </button>
         </form>
       </div>
     </section>
+    </>
   );
 }
