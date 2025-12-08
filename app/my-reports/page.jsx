@@ -135,19 +135,18 @@ export default function MyReportsPage() {
               <p className="mt-3 text-sm font-medium">
                 Status:{" "}
                 <span
-                  className={`${
-                    item.status === "Claimed"
+                  className={`${item.status === "Claimed"
                       ? "text-green-600"
                       : item.status === "Resolved"
-                      ? "text-purple-600"
-                      : "text-blue-600"
-                  }`}
+                        ? "text-purple-600"
+                        : "text-blue-600"
+                    }`}
                 >
                   {item.status || "Pending"}
                 </span>
               </p>
 
-              {/* Status buttons (ONLY for owner) */}
+              {/* Status buttons */}
               <div className="flex gap-2 mt-4">
                 <button
                   className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md"
@@ -169,10 +168,19 @@ export default function MyReportsPage() {
                 </button>
               </div>
 
+              {/* 🔵 New: Open chat */}
+              <button
+                onClick={() => router.push(`/chat/${item.id}`)}
+                className="mt-3 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+              >
+                Open Chat
+              </button>
+
               {/* Report ID */}
               <p className="text-xs text-gray-400 mt-3">ID: {item.id}</p>
             </div>
           ))}
+
         </div>
       )}
     </div>

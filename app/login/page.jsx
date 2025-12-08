@@ -30,8 +30,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
-      <div className="bg-white shadow-xl rounded-xl p-10 max-w-md w-full text-center border border-blue-100">
+    <div className="min-h-screen flex items-center justify-center bg-[url('/lostshoebg.jpg')] bg-cover bg-no-repeat bg-center">
+      <div className="bg-white/50 shadow-xl rounded-xl p-10 max-w-md w-full text-center border border-blue-100">
        
           <div className="mb-6">
             <img
@@ -46,12 +46,12 @@ export default function Login() {
         </h1>
 
         <p className="text-gray-500 mb-6">
-          Sign in to continue with
+          Continue with
         </p>
-
+         {/* Sign in to continue with */}
         <button
           onClick={loginWithGoogle}
-          className="w-full flex items-center justify-center gap-3 border border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition-all"
+          className="w-full flex items-center justify-center gap-3 border-2 border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition-all"
         >
           <FcGoogle size={24} />
           <span className="text-gray-700 font-medium">

@@ -29,20 +29,20 @@ export default function Navbar() {
     localStorage.removeItem("user");
     setUser(null);
     setOpen(false);
-    window.location.href = "/login";
+    // window.location.href = "/login";
   };
 
   return (
     <nav className="flex justify-between items-center p-5 bg-white shadow-md fixed w-full top-0 left-0 z-[999]">
       <Link href={'/'} className="flex flex-row justify-center item-center gap-2">
-        <span><FaSearchengin className="text-4xl" /></span>
+        <span><FaSearchengin className="text-4xl font-bold text-black" /></span>
         <h1 className="text-2xl font-bold text-blue-600">
           <span className="text-red-600">Lost</span>Finder
         </h1>
       </Link>
       <ul className="hidden md:flex gap-6 text-gray-700 font-medium">
         <li className="hover:text-blue-600 font-bold">
-          <a href="/" onClick={(e) => handleScroll(e, "#home")}>Home</a>
+          <a href="#home" onClick={(e) => handleScroll(e, "#home")}>Home</a>
         </li>
         <li className="hover:text-blue-600 font-bold">
           <a href="#how-it-works" onClick={(e) => handleScroll(e, "#how-it-works")}>How It Works</a>

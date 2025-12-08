@@ -57,7 +57,7 @@ export default function About() {
             Follow our Socials
             <span className="flex flex-row gap-2 justify-around item-center">
               <a href="#"><FaInstagram /></a>
-              <a href="#"><FaXTwitter /></a>
+              <a href="https://x.com/stanlo_classic?s=21"><FaXTwitter /></a>
               <a href="#"><FaFacebook  /></a>
             </span>
           </button>

@@ -1,11 +1,14 @@
 "use client";
-import Navbar from "../components/Navbar";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import verifyUser from "../verifyUser";
 import { storage, db } from "../firebaseconfig"; // db added
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+
+
 
 export default function ReportFound() {
   const router = useRouter();
@@ -48,7 +51,7 @@ export default function ReportFound() {
     }
   };
 
-  // Upload image to firebase
+  // Upload image to Firebase Storage
   const uploadImage = async () => {
     if (!imageFile) return null;
 
@@ -75,7 +78,11 @@ export default function ReportFound() {
     e.preventDefault();
 
     // Basic validation (extra check)
-    if (!formData.itemName.trim() || !formData.foundLocation.trim() || !formData.foundDate) {
+    if (
+      !formData.itemName.trim() ||
+      !formData.foundLocation.trim() ||
+      !formData.foundDate
+    ) {
       alert("Please fill item name, location and date.");
       return;
     }
@@ -103,6 +110,7 @@ export default function ReportFound() {
       reporterEmail: user.email || user?.email || null,
       reporterUID: user.uid || user?.uid || null,
       reporterName: user.name || user.displayName || null,
+      isAnonymous: true,
       createdAt: serverTimestamp(),
     };
 
@@ -110,9 +118,7 @@ export default function ReportFound() {
       // Save to Firestore (collection 'foundReports')
       await addDoc(collection(db, "foundReports"), report);
 
-      // Optional: console log
       console.log("FOUND ITEM REPORTED:", report);
-
       alert("Found item submitted successfully!");
 
       // Reset form
@@ -126,7 +132,7 @@ export default function ReportFound() {
       setImageFile(null);
       setPreview(null);
 
-      // redirect to user's reports (you should create /my-reports)
+      // redirect to user's reports
       router.push("/my-reports");
     } catch (err) {
       console.error("Error saving report:", err);
@@ -137,8 +143,6 @@ export default function ReportFound() {
   };
 
   return (
-    <>
-    <Navbar />
     <section className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 py-14">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
@@ -146,7 +150,6 @@ export default function ReportFound() {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-
           {/* Item Name */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">
@@ -236,6 +239,5 @@ export default function ReportFound() {
         </form>
       </div>
     </section>
-    </>
   );
 }
