@@ -5,7 +5,12 @@ import { motion } from "framer-motion";
 import { db } from "../firebaseconfig";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import verifyUser from "../verifyUser";
-
+import {
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
+} from "firebase/firestore";
 
 
 export default function SearchPage() {
@@ -75,8 +80,55 @@ export default function SearchPage() {
       return matchesQuery && matchesLocation && matchesDate;
     });
   }, [items, queryText, locationFilter, dateFilter]);
+  const activeItems = filtered.filter(
+    (item) => item.status !== "Returned"
+  );
+  const startPrivateChat = async (item) => {
+    if (!currentUser) {
+      window.location.href = "/login";
+      return;
+    }
+
+    // prevent chatting your own report
+    if (currentUser.uid === item.reporterUID) {
+      alert("You cannot chat on your own report");
+      return;
+    }
+
+    const chatId = `${item.id}_${currentUser.uid}`;
+
+    const chatRef = doc(db, "chats", chatId);
+
+    const existingChat = await getDoc(chatRef);
+
+    // create ONLY if chat doesn't exist
+    if (!existingChat.exists()) {
+      await setDoc(chatRef, {
+        chatId,
+
+        itemId: item.id,
+        itemName: item.itemName,
+
+        finderUID: item.reporterUID,
+        finderName: item.reporterName,
+
+        seekerUID: currentUser.uid,
+        seekerName:
+          currentUser.displayName ||
+          currentUser.name ||
+          currentUser.email,
+
+        isAnonymous: item.isAnonymous || false,
+
+        createdAt: serverTimestamp(),
+      });
+    }
+    // multiple chat!! very crucial!!!
+    window.location.href = `/chat/${chatId}`
+  };
 
   return (
+
     <section className="min-h-screen bg-gray-50 px-6 py-12">
       <div className="max-w-6xl mx-auto">
 
@@ -139,11 +191,12 @@ export default function SearchPage() {
         {/* RESULTS */}
         {loading ? (
           <div className="text-center py-20 text-gray-600">Loading items...</div>
-        ) : filtered.length === 0 ? (
+        ) : activeItems.length === 0 ? (
           <div className="text-center py-20 text-gray-500">No items found.</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((it, idx) => {
+
+            {activeItems.map((it, idx) => {
               const imageUrl = it.imageUrl || it.imageURL || FALLBACK_IMAGE;
 
               return (
@@ -171,12 +224,27 @@ export default function SearchPage() {
                     </div>
 
                     {currentUser && currentUser.uid !== it.reporterUID && (
-                      <button
-                        onClick={() => (window.location.href = `/chat/${it.id}`)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                      >
-                        Chat with Finder
-                      </button>
+
+                      it.status === "Returned" ? (
+
+                        <button
+                          disabled
+                          className="px-4 py-2 bg-gray-400 text-white rounded-md cursor-not-allowed"
+                        >
+                          Item Returned
+                        </button>
+
+                      ) : (
+
+                        <button
+                          onClick={() => startPrivateChat(it)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        >
+                          Chat with Finder
+                        </button>
+
+                      )
+
                     )}
 
 

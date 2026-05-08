@@ -15,12 +15,15 @@ export default function Login() {
       const user = result.user;
 
 
-      localStorage.setItem("user", JSON.stringify({
-        name: user.displayName,
-        email: user.email,
-        photo: user.photoURL,
-        uid: user.uid
-      }));
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          uid: user.uid,
+          displayName: user.displayName,
+          email: user.email,
+          photo: user.photoURL,
+        })
+      );
 
       router.push("/");
     } catch (err) {
@@ -32,15 +35,15 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[url('/lostshoebg.jpg')] bg-cover bg-no-repeat bg-center">
       <div className="bg-white/50 shadow-xl rounded-xl p-10 max-w-md w-full text-center border border-blue-100">
-       
-          <div className="mb-6">
-            <img
-              src="/favicon.ico"
-              alt="Logo"
-              className="w-14 h-14 mx-auto"
-            />
-          </div>
-       
+
+        <div className="mb-6">
+          <img
+            src="/favicon.ico"
+            alt="Logo"
+            className="w-14 h-14 mx-auto"
+          />
+        </div>
+
         <h1 className="text-3xl font-bold text-gray-800 mb-3">
           Login to <span className="text-blue-600"><span className="text-red-600">Lost</span>Finder</span>
         </h1>
@@ -48,7 +51,7 @@ export default function Login() {
         <p className="text-gray-500 mb-6">
           Continue with
         </p>
-         {/* Sign in to continue with */}
+        {/* Sign in to continue with */}
         <button
           onClick={loginWithGoogle}
           className="w-full flex items-center justify-center gap-3 border-2 border-gray-300 rounded-lg py-3 hover:bg-gray-50 transition-all"

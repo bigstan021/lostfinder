@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import verifyUser from "../verifyUser";
 import { db } from "../firebaseconfig";
+import { sendNotification } from "../utils/sendNotification";
+
 import {
   collection,
   query,
@@ -15,174 +17,197 @@ import {
 } from "firebase/firestore";
 
 export default function MyReportsPage() {
+
   const router = useRouter();
+
   const [user, setUser] = useState(null);
   const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [claims, setClaims] = useState([]);
 
-  // Verify login
   useEffect(() => {
+
     const u = verifyUser();
+
     if (!u) {
       router.push("/login");
       return;
     }
+
     setUser(u);
+
     fetchReports(u.uid);
+    fetchClaims(u.uid);
+
   }, []);
 
-  // Fetch user's own reports
+  //  Fetch reports
   const fetchReports = async (uid) => {
-    try {
-      const q = query(
-        collection(db, "foundReports"),
-        where("reporterUID", "==", uid),
-        orderBy("createdAt", "desc")
-      );
 
-      const snapshot = await getDocs(q);
-      const items = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+    const q = query(
+      collection(db, "foundReports"),
+      where("reporterUID", "==", uid),
+      orderBy("createdAt", "desc")
+    );
 
-      setReports(items);
-    } catch (err) {
-      console.error("Error fetching reports:", err);
-    } finally {
-      setLoading(false);
-    }
+    const snap = await getDocs(q);
+
+    setReports(
+      snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }))
+    );
   };
 
-  // Update status (Pending / Claimed / Resolved)
-  const updateStatus = async (id, newStatus) => {
-    try {
-      await updateDoc(doc(db, "foundReports", id), {
-        status: newStatus,
-      });
+  //  Fetch claims
+  const fetchClaims = async (uid) => {
 
-      // Update local UI instantly
-      setReports((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, status: newStatus } : item
-        )
-      );
-    } catch (err) {
-      console.error("Error updating status:", err);
-    }
+    const q = query(
+      collection(db, "claims"),
+      where("finderUID", "==", uid)
+    );
+
+    const snap = await getDocs(q);
+
+    setClaims(
+      snap.docs.map((d) => ({
+        id: d.id,
+        ...d.data(),
+      }))
+    );
+  };
+
+  //  Approve
+  const approveClaim = async (
+    claimId,
+    itemId,
+    seekerUID
+  ) => {
+
+    await updateDoc(doc(db, "claims", claimId), {
+      status: "approved",
+    });
+
+   await updateDoc(doc(db, "foundReports", itemId), {
+  status: "Returned",
+});
+
+    const requestQuery = query(
+  collection(db, "matchRequests"),
+  where("userUID", "==", seekerUID),
+  where("active", "==", true)
+);
+
+const requestSnap = await getDocs(requestQuery);
+
+requestSnap.forEach(async (d) => {
+
+  await updateDoc(doc(db, "matchRequests", d.id), {
+    active: false,
+  });
+
+});
+    await sendNotification({
+      userUID: seekerUID,
+      type: "approval",
+      message: "Your claim request was approved 🎉",
+      itemId,
+    });
+
+    alert("Claim approved");
+
+    fetchClaims(user.uid);
+    fetchReports(user.uid);
+  };
+
+  //  Reject
+  const rejectClaim = async (claimId) => {
+
+    await updateDoc(doc(db, "claims", claimId), {
+      status: "rejected",
+    });
+
+    fetchClaims(user.uid);
   };
 
   if (!user) return null;
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-xl">
-        Loading your reports...
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
+    <div className="min-h-screen bg-gray-50 p-8">
+
       <h1 className="text-3xl font-bold text-center text-blue-600 mb-8">
         My Reports
       </h1>
 
-      {/* If no reports */}
-      {reports.length === 0 ? (
-        <p className="text-center text-gray-500">
-          You have not submitted any reports yet.
-        </p>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reports.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white shadow-md rounded-lg p-4 border"
-            >
-              {/* Image */}
-              {item.imageUrl ? (
-                <img
-                  src={item.imageUrl}
-                  alt="Found Item"
-                  className="w-full h-40 object-cover rounded-md mb-3"
-                />
-              ) : (
-                <div className="w-full h-40 bg-gray-200 flex items-center justify-center rounded-md mb-3 text-gray-500">
-                  No Image
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        {reports.map((item) => (
+
+          <div
+            key={item.id}
+            className="bg-white shadow rounded p-4"
+          >
+
+            <h2 className="text-xl font-semibold">
+              {item.itemName}
+            </h2>
+
+            <p>{item.description}</p>
+
+            <p className="text-sm mt-2">
+              Status: {item.status || "Pending"}
+            </p>
+
+            {/* CLAIM REQUESTS */}
+            {claims
+              .filter(
+                (c) =>
+                  c.itemId === item.id &&
+                  c.status === "pending" &&
+                  item.status !== "Returned"
+              )
+              .map((c) => (
+
+                <div
+                  key={c.id}
+                  className="mt-3 p-2 border rounded bg-gray-100"
+                >
+
+                  <p>
+                    Claim request from{" "}
+                    <b>{c.seekerName}</b>
+                  </p>
+
+                  <div className="flex gap-2 mt-2">
+
+                    <button
+                      onClick={() =>
+                        approveClaim(
+                          c.id,
+                          item.id,
+                          c.seekerUID
+                        )
+                      }
+                      className="bg-green-600 text-white px-2 py-1 rounded"
+                    >
+                      Approve
+                    </button>
+
+                    <button
+                      onClick={() =>
+                        rejectClaim(c.id)
+                      }
+                      className="bg-red-600 text-white px-2 py-1 rounded"
+                    >
+                      Reject
+                    </button>
+
+                  </div>
                 </div>
-              )}
-
-              {/* Item Name */}
-              <h2 className="text-xl font-semibold text-gray-800">
-                {item.itemName}
-              </h2>
-
-              {/* Description */}
-              <p className="text-gray-600 mt-1">{item.description}</p>
-
-              {/* Location */}
-              <p className="text-sm text-gray-500 mt-2">
-                <strong>Found Location:</strong> {item.foundLocation}
-              </p>
-
-              {/* Date */}
-              <p className="text-sm text-gray-500">
-                <strong>Found Date:</strong> {item.foundDate}
-              </p>
-
-              {/* Status */}
-              <p className="mt-3 text-sm font-medium">
-                Status:{" "}
-                <span
-                  className={`${item.status === "Claimed"
-                      ? "text-green-600"
-                      : item.status === "Resolved"
-                        ? "text-purple-600"
-                        : "text-blue-600"
-                    }`}
-                >
-                  {item.status || "Pending"}
-                </span>
-              </p>
-
-              {/* Status buttons */}
-              <div className="flex gap-2 mt-4">
-                <button
-                  className="px-3 py-1 bg-blue-100 text-blue-700 rounded-md"
-                  onClick={() => updateStatus(item.id, "Pending")}
-                >
-                  Pending
-                </button>
-                <button
-                  className="px-3 py-1 bg-green-100 text-green-700 rounded-md"
-                  onClick={() => updateStatus(item.id, "Claimed")}
-                >
-                  Claimed
-                </button>
-                <button
-                  className="px-3 py-1 bg-purple-100 text-purple-700 rounded-md"
-                  onClick={() => updateStatus(item.id, "Resolved")}
-                >
-                  Resolved
-                </button>
-              </div>
-
-              {/* 🔵 New: Open chat */}
-              <button
-                onClick={() => router.push(`/chat/${item.id}`)}
-                className="mt-3 px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-              >
-                Open Chat
-              </button>
-
-              {/* Report ID */}
-              <p className="text-xs text-gray-400 mt-3">ID: {item.id}</p>
-            </div>
-          ))}
-
-        </div>
-      )}
+              ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
-}
+} 

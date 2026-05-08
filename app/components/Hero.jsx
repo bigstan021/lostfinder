@@ -36,7 +36,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 1 }}
-          className="mt-8 flex gap-4 justify-center"
+          className="mt-8 flex gap-4 justify-center flex-wrap"
         >
           <Link href="/report-found">
             <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition">
@@ -49,6 +49,12 @@ export default function Hero() {
               Search Found Items
             </button>
           </Link>
+
+          <Link href="/report-lost">
+            <button className="bg-red-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-red-700 transition">
+              Report Lost Item
+            </button>
+          </Link> 
         </motion.div>
       </div>
     </section>

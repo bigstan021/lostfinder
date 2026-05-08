@@ -3,12 +3,20 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import verifyUser from "../verifyUser";
-import { storage, db } from "../firebaseconfig"; // db added
+import { storage, db } from "../firebaseconfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 
-
+import { matchItems } from "../utils/matchingEngine";
+import { sendNotification } from "../utils/sendNotification";
 
 export default function ReportFound() {
   const router = useRouter();
@@ -19,7 +27,6 @@ export default function ReportFound() {
     description: "",
     foundLocation: "",
     foundDate: "",
-    imageUrl: "",
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -27,7 +34,7 @@ export default function ReportFound() {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Check login
+  //  Check login
   useEffect(() => {
     const u = verifyUser();
     if (!u) router.push("/login");
@@ -36,13 +43,13 @@ export default function ReportFound() {
 
   if (!user) return null;
 
-  // Handle form inputs
+  //  Handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Select image + preview
+  //  Image select
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -51,33 +58,32 @@ export default function ReportFound() {
     }
   };
 
-  // Upload image to Firebase Storage
+  //  Upload image
   const uploadImage = async () => {
-    if (!imageFile) return null;
+    if (!imageFile) return "";
 
     setUploading(true);
 
-    const safeName = imageFile.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const fileName = `found_items/${Date.now()}_${safeName}`;
-    const storageRef = ref(storage, fileName);
-
     try {
+      const fileName = `found_items/${Date.now()}_${imageFile.name}`;
+      const storageRef = ref(storage, fileName);
+
       await uploadBytes(storageRef, imageFile);
       const url = await getDownloadURL(storageRef);
+
       setUploading(false);
       return url;
     } catch (err) {
       console.error("Upload error:", err);
       setUploading(false);
-      return null;
+      return "";
     }
   };
 
-  // Submit form
+  //  Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Basic validation (extra check)
     if (
       !formData.itemName.trim() ||
       !formData.foundLocation.trim() ||
@@ -93,50 +99,84 @@ export default function ReportFound() {
 
     if (imageFile) {
       imageUrl = await uploadImage();
-      if (!imageUrl) {
-        alert("Failed to upload image. Try again.");
-        setSaving(false);
-        return;
-      }
     }
 
-    // Build report object
     const report = {
       itemName: formData.itemName,
       description: formData.description,
       foundLocation: formData.foundLocation,
       foundDate: formData.foundDate,
       imageUrl: imageUrl || "",
-      reporterEmail: user.email || user?.email || null,
-      reporterUID: user.uid || user?.uid || null,
-      reporterName: user.name || user.displayName || null,
+      reporterEmail: user.email || null,
+      reporterUID: user.uid || null,
+      reporterName: user.displayName || user.name || "Finder",
       isAnonymous: true,
       createdAt: serverTimestamp(),
     };
 
     try {
-      // Save to Firestore (collection 'foundReports')
-      await addDoc(collection(db, "foundReports"), report);
+      //  Save found item
+      const docRef = await addDoc(collection(db, "foundReports"), report);
 
-      console.log("FOUND ITEM REPORTED:", report);
+      const newItem = {
+        id: docRef.id,
+        ...report,
+      };
+
+      //  CHECK MATCH REQUESTS...the intelligence!!🧠
+     const q = query(
+  collection(db, "matchRequests"),
+  where("active", "==", true)
+);
+
+const requestsSnap = await getDocs(q);
+
+      for (const docSnap of requestsSnap.docs) {
+
+        const req = docSnap.data();
+
+        const results = matchItems(
+          {
+            itemName: req.itemName,
+            description: req.description,
+            lostLocation: req.location,
+            lostDate: req.date,
+          },
+          [newItem]
+        );
+
+        if (results.length > 0) {
+
+          // don't notify uploader
+          if (req.userUID === user.uid) return;
+
+          await sendNotification({
+            userUID: req.userUID,
+            type: "match",
+            message: `A new item matches your lost item (${newItem.itemName})`,
+            itemId: newItem.id,
+          });
+
+        }
+      }
+
       alert("Found item submitted successfully!");
 
-      // Reset form
+      //  Reset form
       setFormData({
         itemName: "",
         description: "",
         foundLocation: "",
         foundDate: "",
-        imageUrl: "",
       });
+
       setImageFile(null);
       setPreview(null);
 
-      // redirect to user's reports
       router.push("/my-reports");
     } catch (err) {
       console.error("Error saving report:", err);
-      alert("Failed to save report. Try again.");
+      alert("Failed to save report.");
     } finally {
       setSaving(false);
     }
@@ -145,97 +185,69 @@ export default function ReportFound() {
   return (
     <section className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 py-14">
       <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
+
         <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
           Report a Found Item
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Item Name */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Item Name
-            </label>
-            <input
-              type="text"
-              name="itemName"
-              value={formData.itemName}
-              onChange={handleChange}
-              placeholder="e.g. iPhone, Wallet..."
-              required
-              className="w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
 
-          {/* Description */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              placeholder="Describe the condition, color, features..."
-              className="w-full border border-gray-300 rounded-md p-2 h-24"
-            ></textarea>
-          </div>
+          <input
+            type="text"
+            name="itemName"
+            value={formData.itemName}
+            onChange={handleChange}
+            placeholder="Item name"
+            className="w-full border p-2 rounded"
+          />
 
-          {/* Location Found */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Location Found
-            </label>
-            <input
-              type="text"
-              name="foundLocation"
-              value={formData.foundLocation}
-              onChange={handleChange}
-              placeholder="Where did you find it?"
-              required
-              className="w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            placeholder="Description"
+            className="w-full border p-2 rounded"
+          />
 
-          {/* Date Found */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Date Found
-            </label>
-            <input
-              type="date"
-              name="foundDate"
-              value={formData.foundDate}
-              onChange={handleChange}
-              required
-              className="w-full border border-gray-300 rounded-md p-2"
-            />
-          </div>
+          <input
+            type="text"
+            name="foundLocation"
+            value={formData.foundLocation}
+            onChange={handleChange}
+            placeholder="Location found"
+            className="w-full border p-2 rounded"
+          />
 
-          {/* Image Upload */}
-          <div>
-            <label className="block text-gray-700 font-medium mb-1">
-              Upload Image (Optional)
-            </label>
-            <input type="file" accept="image/*" onChange={handleImageSelect} />
-          </div>
+          <input
+            type="date"
+            name="foundDate"
+            value={formData.foundDate}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
+          />
 
-          {/* Preview */}
+          <input type="file" accept="image/*" onChange={handleImageSelect} />
+
           {preview && (
             <img
               src={preview}
-              className="w-full h-40 object-cover rounded-md border"
+              className="w-full h-40 object-cover rounded"
               alt="Preview"
             />
           )}
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={uploading || saving}
-            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
           >
-            {uploading ? "Uploading image..." : saving ? "Saving..." : "Submit Found Item"}
+            {uploading
+              ? "Uploading..."
+              : saving
+                ? "Saving..."
+                : "Submit Found Item"}
           </button>
+
         </form>
       </div>
     </section>
