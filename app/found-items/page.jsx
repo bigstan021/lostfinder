@@ -128,37 +128,39 @@ export default function SearchPage() {
   };
 
   return (
+    <section className="relative min-h-screen bg-gradient-to-br from-[#050816] via-[#0f172a] to-[#111827] px-6 py-16 overflow-hidden">
+      <div className="absolute top-20 left-0 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full"></div>
 
-    <section className="min-h-screen bg-gray-50 px-6 py-12">
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 blur-3xl rounded-full"></div>
       <div className="max-w-6xl mx-auto">
-
-        <h1 className="text-3xl md:text-4xl font-bold text-blue-600 mb-6">
-          Search Found Items
+        {/* HEADER */}
+        <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-6">
+          Search <span className="text-cyan-500">Found</span> Items
         </h1>
 
         {/* FILTER SECTION */}
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-10">
+        <div className="bg-white/5 backdrop-blur-2xl border border-white/10 p-6 rounded-3xl shadow-2xl mb-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
             {/* Search */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Search</label>
+              <label className="text-sm font-medium text-gray-300">Search</label>
               <input
                 type="text"
                 placeholder="Search by item name..."
                 value={queryText}
                 onChange={(e) => setQueryText(e.target.value)}
-                className="w-full p-3 border rounded-md mt-1"
+                className="w-full p-3 bg-white/10 border border-white/10 rounded-2xl mt-1 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
             </div>
 
             {/* Location */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Location</label>
+              <label className="text-sm font-medium text-gray-300">Location</label>
               <select
                 value={locationFilter}
                 onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full p-3 border rounded-md mt-1"
+                className="w-full p-3 bg-white/10 border border-white/10 rounded-2xl mt-1 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               >
                 {locations.map((loc) => (
                   <option key={loc} value={loc}>
@@ -170,12 +172,12 @@ export default function SearchPage() {
 
             {/* Date */}
             <div>
-              <label className="text-sm font-medium text-gray-700">Date Found</label>
+              <label className="text-sm font-medium text-gray-300">Date Found</label>
               <input
                 type="date"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="w-full p-3 border rounded-md mt-1"
+                className="w-full p-3 bg-white/10 border border-white/10 rounded-2xl mt-1 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               />
               <button
                 onClick={() => setDateFilter("")}
@@ -205,20 +207,21 @@ export default function SearchPage() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: idx * 0.06 }}
-                  className="bg-white rounded-lg shadow-md overflow-hidden border"
+                  className="group relative overflow-hidden bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-2xl hover:-translate-y-3 hover:border-cyan-400/30 transition-all duration-500"
                 >
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition duration-500"></div>
                   <img
                     src={imageUrl}
-                    className="w-full h-44 object-cover bg-gray-200"
+                    className="w-full h-56 object-cover bg-gray-900 group-hover:scale-110 transition duration-700"
                     alt="Found item"
                   />
 
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold">{it.itemName}</h3>
+                  <div className="p-6 relative z-10">
+                    <h3 className="text-2xl font-bold text-white">{it.itemName}</h3>
 
-                    <p className="text-sm text-gray-600 mt-2">{it.description}</p>
+                    <p className="text-sm text-gray-300 mt-2">{it.description}</p>
 
-                    <div className="mt-3 text-sm text-gray-500">
+                    <div className="mt-3 text-sm text-cyan-300">
                       <p><strong>Location:</strong> {it.foundLocation}</p>
                       <p><strong>Date:</strong> {it.foundDate}</p>
                     </div>
@@ -238,7 +241,7 @@ export default function SearchPage() {
 
                         <button
                           onClick={() => startPrivateChat(it)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 hover:scale-105 transition-all duration-300 shadow-xl text-white rounded-md mt-5 w-full"
                         >
                           Chat with Finder
                         </button>

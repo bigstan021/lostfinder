@@ -11,7 +11,7 @@ import { MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function Navbar() {
-  
+
   const [user, setUser] = useState(null);
   const [open, setOpen] = useState(false);
 
@@ -42,18 +42,18 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex justify-between items-center p-5 bg-white shadow-md fixed w-full top-0 left-0 z-[999]">
+    <nav className="flex justify-between items-center px-6 py-4 bg-black/20 backdrop-blur-sm fixed w-full top-0 left-0 z-[999] border-b border-white/10">
 
       {/* LOGO */}
       <Link href="/" className="flex flex-row items-center gap-2">
-        <FaSearchengin className="text-4xl text-black" />
+        <FaSearchengin className="text-4xl text-slate-200 drop-shadow-lg" />
         <h1 className="text-2xl font-bold text-blue-600">
-          <span className="text-red-600">Lost</span>Finder
+          <span className="text-red-600 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">Lost</span>Finder
         </h1>
       </Link>
 
       {/* NAV LINKS */}
-      <ul className="hidden md:flex gap-6 text-gray-700 font-medium">
+      <ul className="hidden md:flex gap-6 text-white font-medium">
         <li className="hover:text-blue-600 font-bold">
           <a href="#home" onClick={(e) => handleScroll(e, "#home")}>Home</a>
         </li>
@@ -83,7 +83,7 @@ export default function Navbar() {
             onClick={() => router.push("/inbox")}
             className="relative"
           >
-            <MessageCircle className="w-6 h-6 text-gray-700" />
+            <MessageCircle className="w-6 h-6 text-white" />
           </button>
 
           {/*  Notification Bell */}
@@ -97,7 +97,7 @@ export default function Navbar() {
             <img
               src={user.photo}
               alt="Profile"
-              className="w-10 h-10 rounded-full border"
+              className="w-10 h-10 rounded-full border-2 border-white shadow-lg"
             />
           </div>
 
@@ -107,12 +107,13 @@ export default function Navbar() {
               initial={{ opacity: 0, scale: 0.8, y: -5 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 mt-85 bg-white shadow-lg rounded-lg w-52 border overflow-hidden"
+              className="absolute right-0 mt-85 bg-white shadow-lg rounded-lg w-64
+max-w-[90vw] border overflow-hidden"
             >
               {/* USER INFO */}
               <div className="px-4 py-3 border-b">
                 <p className="font-semibold text-gray-800">{user.name}</p>
-                <p className="text-sm text-gray-500">{user.email}</p>
+                <p className="text-sm text-gray-800">{user.email}</p>
               </div>
 
               {/* PROFILE */}

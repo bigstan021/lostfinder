@@ -28,7 +28,7 @@ export default function About() {
         viewport={{ once: true }}
         className="text-3xl font-bold text-gray-900 mb-6"
       >
-        About LostFinder
+        About <span className="text-red-600">Lost</span><span className="text-blue-600">Finder</span>
       </motion.h2>
 
       <motion.p

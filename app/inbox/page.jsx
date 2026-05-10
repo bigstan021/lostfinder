@@ -139,9 +139,11 @@ export default function InboxPage() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-gray-50 px-6 py-10">
+        <div className="min-h-screen bg-gradient-to-br from-[#050816] via-[#0f172a] to-[#111827] px-4 py-10 relative overflow-hidden">
+            <div className="absolute top-20 left-10 w-96 h-96 bg-cyan-500/10 blur-3xl rounded-full"></div>
 
-            <h1 className="text-3xl font-bold text-center text-blue-600 mb-8">
+            <div className="absolute bottom-10 right-10 w-96 h-96 bg-blue-500/10 blur-3xl rounded-full"></div>
+            <h1 className="text-5xl font-bold text-center text-cyan-400 mb-12 relative z-10">
                 Inbox
             </h1>
 
@@ -155,36 +157,35 @@ export default function InboxPage() {
             ) : (
 
                 <div className="max-w-2xl mx-auto space-y-4">
-
                     {chats.map((chat, i) => (
 
                         <div
                             key={i}
                             onClick={() => router.push(`/chat/${chat.chatId}`)}
-                            className="bg-white p-4 rounded-lg shadow cursor-pointer hover:bg-gray-100 transition"
+                            className="relative overflow-hidden bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-6 hover:scale-[1.02] hover:border-cyan-400/30 transition-all duration-300 shadow-xl"
                         >
-
-                            <div className="flex justify-between items-center">
+                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 to-blue-500/5 opacity-0 hover:opacity-100 transition duration-500"></div>
+                            <div className="flex justify-between items-center relative z-10">
 
                                 <h3 className="font-semibold text-gray-800">
                                     <div>
-                                        <h3 className="font-semibold text-gray-800">
+                                        <h3 className="font-bold text-2xl text-white">
                                             {chat.itemName}
                                         </h3>
 
-                                        <p className="text-xs text-blue-600">
+                                        <p className="text-cyan-400 font-medium">
                                             {chat.chatPartner}
                                         </p>
                                     </div>
                                 </h3>
 
-                                <span className="text-xs text-gray-400">
+                                <span className="text-cyan-300 text-sm">
                                     {formatTime(chat.createdAt)}
                                 </span>
 
                             </div>
 
-                            <p className="text-sm text-gray-600 mt-1 truncate">
+                           <p className="text-sm text-gray-300 mt-3 truncate relative z-10">
                                 {chat.lastMessage}
                             </p>
 

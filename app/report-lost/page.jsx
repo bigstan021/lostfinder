@@ -39,7 +39,7 @@ export default function ReportLost() {
 
   const FALLBACK_IMAGE = "/placeholder.png";
 
-  // 🔐 Verify user
+  //  Verify user
   useEffect(() => {
     const u = verifyUser();
     if (!u) router.push("/login");
@@ -48,13 +48,13 @@ export default function ReportLost() {
 
   if (!user) return null;
 
-  // 🧠 Handle input
+  //  Handle input
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🖼 Image select
+  //  Image select
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -63,7 +63,7 @@ export default function ReportLost() {
     }
   };
 
-  // ☁️ Upload image
+  //  Upload image
   const uploadImage = async () => {
     if (!imageFile) return "";
 
@@ -108,7 +108,7 @@ export default function ReportLost() {
     }
   };
 
- // Submit
+  // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -169,68 +169,109 @@ export default function ReportLost() {
   };
 
   return (
-    <section className="min-h-screen flex flex-col items-center bg-gray-50 px-6 py-14">
+    <section className="relative min-h-screen flex flex-col items-center bg-gradient-to-br from-[#050816] via-[#0f172a] to-[#111827] px-6 py-14 overflow-hidden">
+
+      {/* ATMOSPHERIC GLOWS */}
+      <div className="absolute top-10 left-0 w-[500px] h-[500px] bg-red-500/10 blur-3xl rounded-full"></div>
+      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyan-500/10 blur-3xl rounded-full"></div>
 
       {/* FORM */}
-      <div className="bg-white shadow-md rounded-lg p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold text-center text-red-600 mb-6">
-          Report a Lost Item
-        </h2>
+      {/* FORM */}
+      <div className="relative z-10 bg-white/5 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-3xl p-8 w-full max-w-lg overflow-hidden">
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            name="itemName"
-            value={formData.itemName}
-            onChange={handleChange}
-            placeholder="Item name"
-            className="w-full border p-2 rounded"
-          />
+        {/* GLOW */}
+        <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-cyan-500/5"></div>
 
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Description"
-            className="w-full border p-2 rounded"
-          />
+        <div className="relative z-10">
 
-          <input
-            name="lostLocation"
-            value={formData.lostLocation}
-            onChange={handleChange}
-            placeholder="Location"
-            className="w-full border p-2 rounded"
-          />
+          <h2 className="text-4xl font-extrabold text-center text-white mb-2">
+            Report a <span className="text-red-600">Lost</span> Item
+          </h2>
 
-          <input
-            type="date"
-            name="lostDate"
-            value={formData.lostDate}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
+          <p className="text-center text-gray-400 mb-8">
+            Report missing belongings and let LostFinder intelligently search for possible matches.
+          </p>
 
-          <input type="file" onChange={handleImageSelect} />
+          <form onSubmit={handleSubmit} className="space-y-4">
 
-          {preview && (
-            <img src={preview} className="w-full h-40 object-cover" />
-          )}
+            <input
+              name="itemName"
+              value={formData.itemName}
+              onChange={handleChange}
+              placeholder="Item name"
+              className="w-full bg-white/10 border border-white/10 p-4 rounded-2xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+            />
 
-          <button className="w-full bg-red-600 text-white py-2 rounded">
-            Submit
-          </button>
-        </form>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Description"
+              className="w-full bg-white/10 border border-white/10 p-4 rounded-2xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+            />
+
+            <input
+              name="lostLocation"
+              value={formData.lostLocation}
+              onChange={handleChange}
+              placeholder="Location"
+              className="w-full bg-white/10 border border-white/10 p-4 rounded-2xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+            />
+
+            <input
+              type="date"
+              name="lostDate"
+              value={formData.lostDate}
+              onChange={handleChange}
+              className="w-full bg-white/10 border border-white/10 p-4 rounded-2xl text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 transition"
+            />
+
+            <label className="border-2 border-dashed border-white/20 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:border-cyan-400 transition bg-white/5">
+
+              <p className="text-white font-medium">
+                Upload Item Image
+              </p>
+
+              <p className="text-gray-400 text-sm mt-1">
+                PNG, JPG or JPEG
+              </p>
+
+              <input
+                type="file"
+                onChange={handleImageSelect}
+                className="hidden"
+              />
+            </label>
+
+            {preview && (
+              <img
+                src={preview}
+                className="w-full h-52 object-cover rounded-2xl border border-white/10 shadow-xl"
+              />
+            )}
+
+            <button
+              disabled={saving || uploading}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-red-500 to-pink-600 text-white font-bold text-lg hover:scale-[1.02] transition-all duration-300 shadow-2xl"
+            >
+              {saving || uploading ? "Processing..." : "Submit"}
+            </button>
+
+          </form>
+        </div>
       </div>
+
+
 
       {/* RESULTS */}
       {showMatches && (
         <div className="mt-12 w-full max-w-6xl">
 
-          <h3 className="text-2xl text-center font-bold mb-6">
+          <h3 className="text-4xl text-center font-extrabold text-white mb-10">
             Possible Matches
           </h3>
 
-          {/* 🔔 NO MATCH */}
+          {/*  NO MATCH */}
           {noMatch && (
             <div className="text-center mb-6">
               <p>No strong matches found.</p>
@@ -255,26 +296,26 @@ export default function ReportLost() {
 
             {matches.map((it) => (
 
-              <div key={it.id} className="bg-white p-4 shadow rounded">
+              <div key={it.id} className="group relative overflow-hidden bg-white/5 backdrop-blur-2xl border border-white/10 rounded-3xl p-4 shadow-2xl hover:-translate-y-2 hover:border-cyan-400/30 transition-all duration-500">
 
                 <img
                   src={it.imageUrl || FALLBACK_IMAGE}
-                  className="h-40 w-full object-cover"
+                  className="h-52 w-full object-cover rounded-2xl group-hover:scale-105 transition duration-700"
                 />
 
-                <h4 className="font-bold mt-2">{it.itemName}</h4>
+                <h4 className="font-bold mt-4 text-2xl text-white">{it.itemName}</h4>
 
-                <p className="text-green-600">
+                <p className="text-cyan-400 font-semibold text-lg">
                   {it.confidence}% match
                 </p>
 
-                <p className="text-xs">
+                <p className="text-sm text-gray-300 mt-2">
                   {it.reasons?.join(", ")}
                 </p>
 
                 <button
                   onClick={() => router.push(`/chat/${it.id}`)}
-                  className="w-full mt-3 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                  className="w-full mt-5 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold hover:scale-105 transition-all duration-300 shadow-xl"
                 >
                   Chat with Finder
                 </button>
@@ -293,7 +334,7 @@ export default function ReportLost() {
                 alert("You will be notified when a better match is uploaded!");
 
               }}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-6 py-4 rounded-2xl font-semibold hover:scale-105 transition-all duration-300 shadow-xl"
             >
               🔔 Notify Me About Future Matches
             </button>
