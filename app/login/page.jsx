@@ -2,7 +2,7 @@
 
 import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../firebaseconfig";
+import { auth, provider, db } from "../firebaseconfig";
 import { useRouter } from "next/navigation";
 
 import {
@@ -47,6 +47,7 @@ export default function Login() {
     } catch (err) {
       console.log("Google login failed:", err);
       alert("Failed to sign in. Try again.");
+      // alert(err.message);
     }
   };
 
