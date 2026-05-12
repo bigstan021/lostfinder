@@ -92,7 +92,7 @@ export default function Navbar() {
             {/* CHAT INTERFACE */}
             <button
               onClick={() => router.push("/inbox")}
-              className="relative md:block"
+              className="relative hidden md:block"
               
             >
               <MessageCircle className="w-6 h-6 text-white" />
